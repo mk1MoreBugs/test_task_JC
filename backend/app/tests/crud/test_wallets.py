@@ -21,17 +21,17 @@ def test__read_wallet_by_uuid__read_wallet_with_incorrect_uuid__return_none(db: 
     assert wallet_in_db is None
 
 
-def test__update_wallet_amount_by_uuid__create_wallet_and_update_amount__return_new_value(db: Session):
+def test__update_wallet_amount_by_uuid__create_wallet_and_update_amount__in_db_new_value(db: Session):
     wallet = create_wallet(session=db)
     new_amount = 100
 
     update_wallet_amount_by_uuid(session=db, wallet_uuid=wallet.uuid, amount=new_amount)
 
     wallet_in_db = read_wallet_by_uuid(session=db, wallet_uuid=wallet.uuid)
-    assert wallet_in_db.amount == wallet_in_db.amount
+    assert wallet_in_db.amount == new_amount
 
 
-def test__update_wallet_amount_by_uuid__create_wallet_and_update_amount_with_incorrect_uuid__return_old_value(db: Session):
+def test__update_wallet_amount_by_uuid__create_wallet_and_update_amount_with_incorrect_uuid__in_db_old_value(db: Session):
     wallet = create_wallet(session=db)
     new_amount = 100
 
