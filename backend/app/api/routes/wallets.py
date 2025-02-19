@@ -8,7 +8,7 @@ from fastapi import (
 )
 
 from app.api.deps import WalletUuid, SessionDep
-from app.crud.wallets import read_wallet_by_uuid, update_wallet_amount_by_uuid
+from app.crud import wallets as crud_wallets
 from app.models.wallets import WalletOperationIn, OperationType, WalletOperationOut
 from app.utils.calculate_new_amount import calculate_new_amount
 
@@ -18,16 +18,16 @@ router = APIRouter(
     tags=["wallets"],
 )
 
-
-@router.post("/create")
-async def create_wallet() -> WalletUuid:
-    pass
-
-
 wallet_not_exist_exception = HTTPException(
     status_code=status.HTTP_400_BAD_REQUEST,
     detail="Кошелек не существует",
 )
+
+
+@router.post("/create")
+async def create_wallet(session: SessionDep) -> dict[str, WalletUuid]:
+    wallet = crud_wallets.create_wallet(session=session)
+    return {"wallet_uuid": wallet.uuid}
 
 
 @router.post("/{wallet_uuid}/operation")
@@ -38,7 +38,7 @@ async def apply_operation(
 ) -> WalletOperationOut:
 
     # check that the wallet exists
-    wallet = read_wallet_by_uuid(session=session, wallet_uuid=wallet_uuid)
+    wallet = crud_wallets.read_wallet_by_uuid(session=session, wallet_uuid=wallet_uuid)
 
     if wallet is not None:
         if operation_data.operationType == OperationType.WITHDRAW.value:
@@ -48,7 +48,7 @@ async def apply_operation(
 
             if new_amount >= 0:
                 # success
-                update_wallet_amount_by_uuid(session=session, wallet_uuid=wallet_uuid, amount=new_amount)
+                crud_wallets.update_wallet_amount_by_uuid(session=session, wallet_uuid=wallet_uuid, amount=new_amount)
                 return WalletOperationOut(uuid=wallet_uuid, message="success")
 
             else:
@@ -60,7 +60,7 @@ async def apply_operation(
 
         elif operation_data.operationType == OperationType.DEPOSIT.value:
             new_amount = calculate_new_amount(old_value=wallet.amount, amount=operation_data.amount)
-            update_wallet_amount_by_uuid(session=session, wallet_uuid=wallet_uuid, amount=new_amount)
+            crud_wallets.update_wallet_amount_by_uuid(session=session, wallet_uuid=wallet_uuid, amount=new_amount)
             return WalletOperationOut(uuid=wallet_uuid, message="success")
 
         else:
@@ -77,7 +77,7 @@ async def apply_operation(
 @router.get("/{wallet_uuid}")
 async def get_balance(wallet_uuid: WalletUuid, session: SessionDep) -> dict[str, int]:
     # check that the wallet exists
-    wallet = read_wallet_by_uuid(session=session, wallet_uuid=wallet_uuid)
+    wallet = crud_wallets.read_wallet_by_uuid(session=session, wallet_uuid=wallet_uuid)
 
     if wallet is not None:
         # return amount
