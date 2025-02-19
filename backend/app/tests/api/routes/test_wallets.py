@@ -108,3 +108,24 @@ def test_apply_operation__apply_operation_with_incorrect_uuid__return_error(
 
     assert response.status_code == 400
     assert response_body.get("detail") == "Кошелек не существует"
+
+
+def test_apply_operation__apply_operation_with_incorrect_json__return_error(
+        client: TestClient,
+        db: Session,
+        wallet: Wallet,
+):
+    data = {
+        "operationType": "WITHDRAW",
+        "amount1": 1000,
+    }
+
+    response = client.post(
+        url=f"{settings.API_V1_STR}/wallets/{wallet.uuid}/operation",
+        json=data,
+    )
+    response_body: dict[str, str] = response.json()
+    print(response_body)
+
+    assert response.status_code == 422
+    assert response_body.get("detail") == "Невалидный json"

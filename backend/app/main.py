@@ -1,5 +1,7 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.exceptions import RequestValidationError
 from starlette.middleware.cors import CORSMiddleware
+from starlette.responses import JSONResponse
 
 from app.api.main import api_router
 from app.core.config import settings
@@ -23,3 +25,11 @@ if settings.all_cors_origins:
     )
 
 app.include_router(api_router)
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    return JSONResponse(
+        status_code= 422,
+        content={"detail": "Невалидный json", "body": exc.body}
+    )
