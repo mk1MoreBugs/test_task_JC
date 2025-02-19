@@ -9,17 +9,17 @@ from sqlmodel import SQLModel, Field
 class Wallet(SQLModel, table=True):
     __tablename__ = "wallets"
     uuid: UUID = Field(primary_key=True, default_factory=uuid4)
-    amount: int
+    amount: Annotated[int, Field(ge=0)]
 
 
-class OperationType(Enum):
+class OperationType(str, Enum):
     DEPOSIT: str = "DEPOSIT"
     WITHDRAW: str = "WITHDRAW"
 
 
 class WalletOperationIn(BaseModel):
     amount: int
-    operationType: Annotated[str, Field()]
+    operationType: OperationType
 
 
 class WalletOperationOut(BaseModel):

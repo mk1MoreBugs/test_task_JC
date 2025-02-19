@@ -29,7 +29,15 @@ app.include_router(api_router)
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    if exc.args[0][0]["type"] == "enum":
+        error_message = "Некорректный тип операции"
+        status_code = 400
+    else:
+        error_message = "Невалидный json"
+        status_code = 422
+
     return JSONResponse(
-        status_code= 422,
-        content={"detail": "Невалидный json", "body": exc.body}
+        status_code= status_code,
+        content={"detail": error_message, "body": exc.body}
     )
+

@@ -63,12 +63,6 @@ async def apply_operation(
             crud_wallets.update_wallet_amount_by_uuid(session=session, wallet_uuid=wallet_uuid, amount=new_amount)
             return WalletOperationOut(uuid=wallet_uuid, message="success")
 
-        else:
-            # error: Incorrect operation type
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Некорректный тип операции"
-            )
     else:
         # error: The wallet does not exist
         raise wallet_not_exist_exception
