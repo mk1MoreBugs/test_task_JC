@@ -18,7 +18,7 @@ class OperationType(str, Enum):
 
 
 class WalletOperationIn(BaseModel):
-    amount: int
+    amount: Annotated[int, Field(gt=0)]
     operationType: OperationType
 
 
