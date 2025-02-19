@@ -125,7 +125,26 @@ def test_apply_operation__apply_operation_with_incorrect_json__return_error(
         json=data,
     )
     response_body: dict[str, str] = response.json()
-    print(response_body)
 
     assert response.status_code == 422
     assert response_body.get("detail") == "Невалидный json"
+
+
+def test_get_balance__get_balance_of_existing_wallet__return_amount(client: TestClient, wallet: Wallet):
+    response = client.get(
+        url=f"{settings.API_V1_STR}/wallets/{wallet.uuid}/",
+    )
+    response_body: dict[str, str] = response.json()
+
+    assert response.status_code == 200
+    assert response_body.get("amount") == wallet.amount
+
+
+def test_get_balance__get_balance_of_non_existent_wallet__return_error(client: TestClient, wallet: Wallet):
+    response = client.get(
+        url=f"{settings.API_V1_STR}/wallets/{uuid.uuid4()}/",
+    )
+    response_body: dict[str, str] = response.json()
+
+    assert response.status_code == 400
+    assert response_body.get("detail") == "Кошелек не существует"

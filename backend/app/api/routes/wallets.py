@@ -24,6 +24,12 @@ async def create_wallet() -> WalletUuid:
     pass
 
 
+wallet_not_exist_exception = HTTPException(
+    status_code=status.HTTP_400_BAD_REQUEST,
+    detail="Кошелек не существует",
+)
+
+
 @router.post("/{wallet_uuid}/operation")
 async def apply_operation(
         wallet_uuid: WalletUuid,
@@ -65,13 +71,17 @@ async def apply_operation(
             )
     else:
         # error: The wallet does not exist
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Кошелек не существует"
-        )
+        raise wallet_not_exist_exception
 
 
-@router.get("/operation/{wallet_uuid}")
-async def get_balance(wallet_uuid: WalletUuid) -> dict[str, int]:
+@router.get("/{wallet_uuid}")
+async def get_balance(wallet_uuid: WalletUuid, session: SessionDep) -> dict[str, int]:
     # check that the wallet exists
-    pass
+    wallet = read_wallet_by_uuid(session=session, wallet_uuid=wallet_uuid)
+
+    if wallet is not None:
+        # return amount
+        return {"amount": wallet.amount}
+    else:
+        # error: The wallet does not exist
+        raise wallet_not_exist_exception
