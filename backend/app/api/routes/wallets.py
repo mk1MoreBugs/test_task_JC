@@ -9,6 +9,7 @@ from fastapi import (
 
 from app.api.deps import WalletUuid, SessionDep
 from app.crud import wallets as crud_wallets
+from app.models.responses import DetailMessage
 from app.models.wallets import WalletOperationIn, OperationType, WalletOperationOut
 from app.utils.calculate_new_amount import calculate_new_amount
 
@@ -30,7 +31,13 @@ async def create_wallet(session: SessionDep) -> dict[str, WalletUuid]:
     return {"wallet_uuid": wallet.uuid}
 
 
-@router.post("/{wallet_uuid}/operation")
+@router.post(
+    path="/{wallet_uuid}/operation",
+    responses={
+        400: {"model": DetailMessage},
+        422: {"model": DetailMessage},
+    }
+)
 async def apply_operation(
         wallet_uuid: WalletUuid,
         operation_data: Annotated[WalletOperationIn, Body()],
@@ -68,7 +75,13 @@ async def apply_operation(
         raise wallet_not_exist_exception
 
 
-@router.get("/{wallet_uuid}")
+@router.get(
+    path="/{wallet_uuid}",
+    responses={
+        400: {"model": DetailMessage},
+        422: {"model": DetailMessage},
+    }
+)
 async def get_balance(wallet_uuid: WalletUuid, session: SessionDep) -> dict[str, int]:
     # check that the wallet exists
     wallet = crud_wallets.read_wallet_by_uuid(session=session, wallet_uuid=wallet_uuid)
