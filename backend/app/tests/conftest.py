@@ -6,6 +6,7 @@ from sqlmodel import Session, SQLModel
 from ..core.config import settings
 from app.core.db import get_engine
 from app.main import app
+from app.crud.wallets import create_wallet
 
 
 @pytest.fixture(scope="package")
@@ -34,3 +35,8 @@ def db() -> Generator[Session, None, None]:
 def client() -> Generator[TestClient, None, None]:
     with TestClient(app) as c:
         yield c
+
+
+@pytest.fixture()
+def wallet(db: Session):
+    return create_wallet(session=db)

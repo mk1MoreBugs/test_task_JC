@@ -1,5 +1,6 @@
 from enum import Enum
 from uuid import UUID, uuid4
+from typing import Annotated
 
 from pydantic import BaseModel
 from sqlmodel import SQLModel, Field
@@ -16,6 +17,11 @@ class OperationType(Enum):
     WITHDRAW: str = "WITHDRAW"
 
 
-class WalletOperationData(BaseModel):
-    operationType: OperationType
+class WalletOperationIn(BaseModel):
     amount: int
+    operationType: Annotated[str, Field()]
+
+
+class WalletOperationOut(BaseModel):
+    uuid: UUID
+    message: str
