@@ -31,7 +31,7 @@ source .venv/bin/activate
 ```commandline
 pip install -r requirements.txt
 ```
-6. Run bash script:
+6. Run bash script. *This script creates a test database, runs the tests using pytest, and deletes the test database.*
 ```commandline
 app/tests/run_tests.sh
 ```
