@@ -1,0 +1,41 @@
+services:
+  backend:
+    build:
+      context: ./backend/
+      dockerfile: ./Dockerfile
+    container_name: "test_task_backend"
+    restart: on-failure
+    depends_on:
+      - db
+    environment:
+      POSTGRES_PASSWORD_FILE: &postgres-password-file /run/secrets/postgres_password
+    env_file: &env-file
+      - .env
+    secrets: &postgres-secret
+      - postgres_password
+    volumes:
+      - "./backend/app:/backend/app"
+    ports:
+      - "8080:8080"
+
+  db:
+    image: postgres:17.2-alpine3.21
+    container_name: "test_task_db"
+    restart: on-failure
+    shm_size: 128mb
+    volumes:
+      - db_volume:/data/postgres
+    environment:
+      PGDATA: /data/postgres
+      POSTGRES_PASSWORD_FILE: *postgres-password-file
+    env_file: *env-file
+    secrets: *postgres-secret
+    ports:
+      - "5432:5432"
+
+volumes:
+  db_volume:
+
+secrets:
+   postgres_password:
+     file: db_password.txt
