@@ -45,16 +45,6 @@ class Settings(BaseSettings):
         return [str(origin).rstrip("/") for origin in self.BACKEND_CORS_ORIGINS]
 
 
-    @property
-    def POSTGRES_SERVER(self) -> str:
-        if self.ENVIRONMENT == "testing" or self.ENVIRONMENT == "migration":
-            return "localhost"
-        else:
-            return self.POSTGRES_SERVER
-
-    POSTGRES_PORT: int = 5432
-    POSTGRES_USER: str
-
     @staticmethod
     def __get_postgres_password():
         path = os.getenv("POSTGRES_PASSWORD_FILE")
@@ -63,26 +53,34 @@ class Settings(BaseSettings):
         with open(path, encoding="utf-8") as f:
             return f.readline()
 
+    POSTGRES_SERVER: str
+    POSTGRES_PORT: int = 5432
+    POSTGRES_USER: str
     POSTGRES_PASSWORD: str = __get_postgres_password()
-
-    @property
-    def POSTGRES_DB(self) -> str:
-        if self.ENVIRONMENT == "testing":
-            return "test_database"
-        else:
-            return self.POSTGRES_DB
+    POSTGRES_DB:str
 
 
     @computed_field  # type: ignore[prop-decorator]
     @property
     def SQLALCHEMY_DATABASE_URI(self) -> PostgresDsn:
+
+        if self.ENVIRONMENT == "testing" or self.ENVIRONMENT == "migration":
+            postgres_server = "localhost"
+        else:
+            postgres_server = self.POSTGRES_SERVER
+
+        if self.ENVIRONMENT == "testing":
+            postgres_db = "test_database"
+        else:
+            postgres_db = self.POSTGRES_DB
+
         return PostgresDsn.build(
             scheme="postgresql+psycopg",
             username=self.POSTGRES_USER,
             password=self.POSTGRES_PASSWORD,
-            host=self.POSTGRES_SERVER,
+            host=postgres_server,
             port=self.POSTGRES_PORT,
-            path=self.POSTGRES_DB,
+            path=postgres_db,
         )
 
 
